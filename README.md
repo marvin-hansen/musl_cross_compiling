@@ -6,6 +6,24 @@ This example code replicates an issue that causes MUSL to build statically linke
 but fails to do so on Linux. The exact reasons are unknown.
 
 
+On MacOS, the build produces statically linked binary, which you can verify:
+
+`file -L target-bzl/out/darwin_arm64-fastbuild/bin/musl_scratch/bin_linux_x86_64_musl/bin`
+
+
+`target-bzl/out/darwin_arm64-fastbuild/bin/musl_scratch/bin_linux_x86_64_musl/bin: 
+ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), static-pie linked, with debug_info, not stripped
+`
+
+However, the same build on Linux (Ubuntu 20.04) results in a dynamically linked binary:
+
+`file -L target-bzl/out/linux_x86_64_musl-fastbuild/bin/musl_scratch/bin`
+
+`target-bzl/out/linux_x86_64_musl-fastbuild/bin/musl_scratch/bin:
+ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), 
+dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, 
+BuildID[md5/uuid]=272ae7184ca510eb7277f7c195a155d9, with debug_info, not stripped`
+
 ## Requirements
 
 MacOS:
@@ -14,11 +32,13 @@ MacOS:
 * Install git, bazelisk, and docker
 
 Ubuntu 20.04
-* install build-essentials
-* Install libstdc++6 libtinfo5
+* install build-essentials, libstdc++6 libtinfo5
 * Install git, bazelisk, and docker
 
+You may have to un-minify the official Ubuntu 20.04 image to get all the usual gnu-tools installed. 
+To do so, simply run in a terminal and follow the prompt. 
 
+`unminimize`
 
 Test the example code:
 
