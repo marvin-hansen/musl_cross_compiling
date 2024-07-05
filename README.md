@@ -5,6 +5,21 @@
 This example code replicates an issue that causes MUSL to build statically linked binaries only on MacOS,
 but fails to do so on Linux. The exact reasons are unknown.
 
+
+## Requirements
+
+MacOS:
+
+* Install xcode command line tools
+* Install git, bazelisk, and docker
+
+Ubuntu 20.04
+* install build-essentials
+* Install libstdc++6 libtinfo5
+* Install git, bazelisk, and docker
+
+
+
 Test the example code:
 
 `bazel test //...`
