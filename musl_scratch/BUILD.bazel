@@ -1,0 +1,212 @@
+# Aspect rules for testing
+load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_binary")
+
+# OCI Container Rules
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_image_index", "oci_push")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+# Custom container macro
+load("//:build/container.bzl", "build_sha265_tag")
+
+# Custom platform transition macro
+load("//:build/transition.bzl", "multi_arch")
+
+filegroup(
+    name = "all",
+    srcs = [
+        ":bin",
+        ":bin_linux_arm64_musl",
+        ":bin_linux_x86_64_musl",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# Build regular Rust binary
+rust_binary(
+    name = "bin",
+    srcs = glob([
+        "src/*/*.rs",
+        "src/*.rs",
+    ]),
+    crate_root = "src/main.rs",
+    # Compiler optimization
+    rustc_flags = select({
+        "//:release": [
+            "-Clto",
+            "-Ccodegen-units=1",
+            "-Cpanic=abort",
+            "-Copt-level=3",
+            "-Cstrip=symbols",
+        ],
+        "//conditions:default": [
+            "-Copt-level=0",
+        ],
+    }),
+    tags = [
+        "musl-tokio",
+        "service",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        # Custom Memory Allocator
+        "@crates//:mimalloc",
+        # External crates
+        "@crates//:arc-swap",
+        "@crates//:serde",
+        "@crates//:serde_json",
+        "@crates//:tokio",
+        "@crates//:tokio-cron-scheduler",
+        "@crates//:warp",
+    ],
+)
+
+# Build a MUSL x86_64 binary
+platform_transition_binary(
+    name = "bin_linux_x86_64_musl",
+    binary = ":bin",
+    target_platform = "//build/platforms:linux_x86_64_musl",
+)
+
+# Test for x86_64 architecture
+sh_test(
+    name = "test_musl_x86_64",
+    srcs = ["test_platform.sh"],
+    args = [
+        "$(rootpath :bin_linux_x86_64_musl)",
+        "x86_64",
+    ],
+    data = [
+        ":bin_linux_x86_64_musl",
+    ],
+    deps = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
+# Test for static compilation
+sh_test(
+    name = "test_musl_x86_64_static",
+    srcs = ["test_platform.sh"],
+    args = [
+        "$(rootpath :bin_linux_x86_64_musl)",
+        "static",
+    ],
+    data = [
+        ":bin_linux_x86_64_musl",
+    ],
+    deps = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
+# Build a MUSL ARM64 binary
+platform_transition_binary(
+    name = "bin_linux_arm64_musl",
+    binary = ":bin",
+    target_platform = "//build/platforms:linux_arm64_musl",
+)
+
+# Test for ARM architecture
+sh_test(
+    name = "test_musl_arm64",
+    srcs = ["test_platform.sh"],
+    args = [
+        "$(rootpath :bin_linux_arm64_musl)",
+        "aarch64",
+    ],
+    data = [
+        ":bin_linux_arm64_musl",
+    ],
+    deps = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
+# Test for static compilation
+sh_test(
+    name = "test_musl_arm64_static",
+    srcs = ["test_platform.sh"],
+    args = [
+        "$(rootpath :bin_linux_arm64_musl)",
+        "static",
+    ],
+    data = [
+        ":bin_linux_arm64_musl",
+    ],
+    deps = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
+# Compress binary to a layer using pkg_tar
+pkg_tar(
+    name = "tar",
+    srcs = [":bin"],
+)
+
+# Build container image
+# https://github.com/bazel-contrib/rules_oci/blob/main/docs/image.md
+oci_image(
+    name = "image",
+    base = "@scratch",
+    entrypoint = ["/bin"],
+    exposed_ports = ["3232"],
+    tars = [":tar"],
+    visibility = ["//visibility:public"],
+)
+
+# Build multi-arch images
+multi_arch(
+    name = "multi_arch_images",
+    image = ":image",
+    platforms = [
+        "//build/platforms:linux_x86_64_musl",
+        "//build/platforms:linux_arm64_musl",
+    ],
+)
+
+# Build a container image index.
+oci_image_index(
+    name = "image_index",
+    images = [
+        ":multi_arch_images",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# A custom macro that simplifies building multi-arch images.
+# See the "Custom Container Macro" and "Discussion" section in the Readme for details.
+# You would have to delete everything from pkg_tar to oci_image_index
+# to use this macro instead of the manual declaration because you cannot mix macro with manual declaration.
+#
+# load("//:build/container.bzl", "build_multi_arch_image", "build_sha265_tag")
+# Build musl multi arch container image
+#build_multi_arch_image(
+#    name = "image_index",
+#    base = "@scratch",
+#    srcs = [":bin"],
+#    exposed_ports = ["3232"],
+#    platforms = [
+#        "//build/platforms:linux_x86_64_musl",
+#        "//build/platforms:linux_arm64_musl",
+#    ],
+#    visibility = ["//visibility:public"],
+#)
+
+# Build an unique and immutable image tag based on the image SHA265 digest.
+build_sha265_tag(
+    name = "tags",
+    image = ":image_index",
+    input = "image.json.sha256",
+    output = "_tag.txt",
+)
+
+# Publish multi-arch with image index to registry
+oci_push(
+    name = "push",
+    image = ":image_index",
+    remote_tags = ":tags",
+    repository = "my.registry.com/musl",
+    visibility = ["//visibility:public"],
+)
