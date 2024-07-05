@@ -24,6 +24,54 @@ ELF 64-bit LSB shared object, x86-64, version 1 (SYSV),
 dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, 
 BuildID[md5/uuid]=272ae7184ca510eb7277f7c195a155d9, with debug_info, not stripped`
 
+**x86_64 Toolchain resolution:**
+
+Host toolchain resolves correctly. For example, on Ubuntu x86_64:
+
+      ToolchainResolution: Recap of selected @@bazel_tools//tools/cpp:toolchain_type toolchains for target platform @@platforms//host:host:
+
+      ToolchainResolution:   Selected @@toolchains_llvm~~llvm~llvm_toolchain//:cc-clang-x86_64-linux to run on execution platform @@platforms//host:host
+
+linux_arm64_musl target toolchain resolves correctly to MUSL. For example, on Ubuntu x86_64:
+
+      INFO: ToolchainResolution: Target platform //build/platforms:linux_arm64_musl: 
+
+      Selected execution platform @@platforms//host:host, type @@rules_rust~//rust:toolchain_type 
+      
+      -> toolchain @@rules_rust~~rust~rust_linux_x86_64__aarch64-unknown-linux-musl__stable_tools//:rust_toolchain, type @@bazel_tools//tools/cpp:toolchain_type 
+
+      -> toolchain @@toolchains_musl~~toolchains_musl~musl-1_2_3-platform-x86_64-unknown-linux-gnu-target-aarch64-linux-musl//:musl-1_2_3-platform-x86_64-unknown-linux-gnu-target-aarch64-linux-musl
+
+x86_64_musl, however, resolves incorrectly to clang-x86_64-linux
+
+      INFO: ToolchainResolution: Target platform //build/platforms:linux_arm64_musl: Selected execution platform @@platforms//host:host, type @@rules_rust~//rust:toolchain_type
+
+      -> toolchain @@rules_rust~~rust~rust_linux_x86_64__aarch64-unknown-linux-musl__stable_tools//:rust_toolchain, type @@bazel_tools//tools/cpp:toolchain_type 
+
+      -> toolchain @@toolchains_musl~~toolchains_musl~musl-1_2_3-platform-x86_64-unknown-linux-gnu-target-aarch64-linux-musl//:musl-1_2_3-platform-x86_64-unknown-linux-gnu-target-aarch64-linux-musl
+
+**Apple aarch64 (Apple Silicon) Toolchain resolution:**
+
+
+Host toolchain resolves correctly on Mac:
+
+       Target platform @@platforms//host:host: Selected execution platform @@platforms//host:host, type @@rules_rust~//rust:toolchain_type 
+      -> toolchain @@rules_rust~~rust~rust_darwin_aarch64__aarch64-apple
+
+linux_arm64_musl target toolchain resolves correctly to MUSL on Mac:
+
+       ToolchainResolution: Target platform //build/platforms:linux_arm64_musl: Selected execution platform @@platforms//host:host, type @@bazel_tools//tools/cpp:toolchain_type 
+
+      -> toolchain @@toolchains_musl~~toolchains_musl~musl-1_2_3-platform-aarch64-apple-darwin-target-aarch64-linux-musl//:musl-1_2_3-platform-aarch64-apple-darwin-target-aarch64-linux-musl
+
+
+linux_x86_64_musl, target toolchain resolves correctly to MUSL on Mac: 
+
+      ToolchainResolution: Target platform //build/platforms:linux_x86_64_musl: Selected execution platform @@platforms//host:host, type @@bazel_tools//tools/cpp:toolchain_type 
+
+      -> toolchain @@toolchains_musl~~toolchains_musl~musl-1_2_3-platform-aarch64-apple-darwin-target-x86_64-linux-musl//:musl-1_2_3-platform-aarch64-apple-darwin-target-x86_64-linux-musl
+
+
 ## Requirements
 
 MacOS:
@@ -33,7 +81,7 @@ MacOS:
 
 Ubuntu 20.04
 * install build-essentials, libstdc++6 libtinfo5
-* Install git, bazelisk, and docker
+* Install git, bazelisk, and [docker](https://phoenixnap.com/kb/install-docker-on-ubuntu-20-04)
 
 You may have to un-minify the official Ubuntu 20.04 image to get all the usual gnu-tools installed. 
 To do so, simply run in a terminal and follow the prompt. 
