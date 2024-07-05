@@ -11,12 +11,13 @@ Test the example code:
 
 These tests pass on MacOs (14), but fail on Ubuntu 18.04 and 20.04. 
 
+* Tests are defined here: [BUILD.bazel](musl_scratch/BUILD.bazel)
+* Test script: [test_platform](musl_scratch/test_platform.sh)
+
 
 Build the example code:
 
 `bazel build //...`
-
-This may take a while on the first run because Bazel downloads multiple toolchains.
 
 To apply compiler optimization and striping the binary:
 
