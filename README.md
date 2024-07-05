@@ -1,12 +1,18 @@
-#  Replicates MUSL BUG ON LINUX
+#  Replicates MUSL BUG
 
 **Important:**
 
 This example code replicates an issue that causes MUSL when build with Bazel to build correctly statically linked binaries on MacOS,
 but fails to do so on Linux. The exact reasons are unknown.
 
+Test the example code:
 
-To build the example code:
+`bazel test //...`
+
+These tests pass on MacOs (14), but fail on Ubuntu 18.04 and 20.04. 
+
+
+Build the example code:
 
 `bazel build //...`
 
