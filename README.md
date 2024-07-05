@@ -80,9 +80,6 @@ However, in addition to LLVM and platform support, we also add the MUSL toolchai
 Let's start with adding the requires rules to the MODULE.bazel file:
 
 ```Starlark
-###############################################################################
-# B A Z E L  C E N T R A L  R E G I S T R Y # https://registry.bazel.build/
-###############################################################################
 # https://github.com/bazelbuild/rules_rust/releases
 bazel_dep(name = "rules_rust", version = "0.46.0")
 # Rules for OCI container images
