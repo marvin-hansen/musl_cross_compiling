@@ -8,7 +8,7 @@ module(
 bazel_dep(name = "aspect_bazel_lib", version = "2.5.0")
 
 # https://github.com/bazelbuild/rules_rust/releases
-bazel_dep(name = "rules_rust", version = "0.46.0")
+bazel_dep(name = "rules_rust", version = "0.47.1")
 
 # Rules for OCI container images
 # https://github.com/bazel-contrib/rules_oci/releases
@@ -67,7 +67,7 @@ llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 # https://github.com/bazel-contrib/toolchains_llvm/blob/master/toolchain/internal/llvm_distributions.bzl
 LLVM_VERSIONS = {
     "": "16.0.0",
-    "darwin-aarch64": "16.0.3",
+    "darwin-aarch64": "16.0.5",
     "darwin-x86_64": "15.0.7",
 }
 

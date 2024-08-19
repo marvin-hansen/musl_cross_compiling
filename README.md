@@ -2,8 +2,7 @@
 
 **Important:**
 
-This example code replicates an issue that causes MUSL to build statically linked binaries only on MacOS,
-but fails to do so on Linux. The exact reasons are unknown.
+This example code replicates an issue that causes MUSL to build statically linked binaries only on MacOS, but fails to do so on Linux X86. The exact reasons are discussed in [GH issue 2726](https://github.com/bazelbuild/rules_rust/issues/2726).
 
 
 On MacOS, the build produces statically linked binary, which you can verify:
