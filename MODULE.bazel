@@ -8,7 +8,15 @@ module(
 bazel_dep(name = "aspect_bazel_lib", version = "2.5.0")
 
 # https://github.com/bazelbuild/rules_rust/releases
-bazel_dep(name = "rules_rust", version = "0.46.0")
+bazel_dep(name = "rules_rust", version = "0.49.3")
+git_override(
+    module_name = "rules_rust",
+    remote = "https://github.com/bazelbuild/rules_rust",
+    commit = "bef8d2d4e709191a4d4beced8c2cbb748e35f516",
+    # https://github.com/bazelbuild/rules_rust/pull/2731
+    patches = ["//third_party:2731.diff"],
+    patch_strip = 1,
+)
 
 # Rules for OCI container images
 # https://github.com/bazel-contrib/rules_oci/releases
@@ -19,7 +27,7 @@ bazel_dep(name = "rules_pkg", version = "0.10.1")
 
 # Rules for musl cross compilation
 # https://github.com/bazel-contrib/musl-toolchain/releases
-bazel_dep(name = "toolchains_musl", version = "0.1.16", dev_dependency = True)
+bazel_dep(name = "toolchains_musl", version = "0.1.17", dev_dependency = True)
 
 # https://github.com/bazelbuild/platforms/releases
 bazel_dep(name = "platforms", version = "0.0.10")
